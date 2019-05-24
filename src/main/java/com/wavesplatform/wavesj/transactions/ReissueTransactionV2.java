@@ -10,7 +10,7 @@ import java.util.List;
 
 import static com.wavesplatform.wavesj.ByteUtils.KBYTE;
 
-public class ReissueTransactionV2 extends TransactionWithProofs<ReissueTransactionV2> implements ReissueTransaction {
+public class ReissueTransactionV2 extends TransactionWithProofs implements ReissueTransaction {
     public static final byte REISSUE = 5;
 
     private PublicKeyAccount senderPublicKey;
@@ -20,12 +20,11 @@ public class ReissueTransactionV2 extends TransactionWithProofs<ReissueTransacti
     private boolean reissuable;
     private long fee;
     private long timestamp;
-    private static final int MAX_TX_SIZE = KBYTE;
 
     @JsonCreator
     public ReissueTransactionV2(@JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
                                 @JsonProperty("chainId") byte chainId,
-                                @JsonProperty("address") String assetId,
+                                @JsonProperty("assetId") String assetId,
                                 @JsonProperty("quantity") long quantity,
                                 @JsonProperty("reissuable") boolean reissuable,
                                 @JsonProperty("fee") long fee,
@@ -55,7 +54,7 @@ public class ReissueTransactionV2 extends TransactionWithProofs<ReissueTransacti
         this.reissuable = reissuable;
         this.fee = fee;
         this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBodyBytes()))));
+        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBytes()))));
     }
 
     public PublicKeyAccount getSenderPublicKey() {
@@ -87,13 +86,8 @@ public class ReissueTransactionV2 extends TransactionWithProofs<ReissueTransacti
     }
 
     @Override
-    public int getTransactionMaxSize(){
-        return MAX_TX_SIZE;
-    }
-
-    @Override
-    public byte[] getBodyBytes() {
-        ByteBuffer buf = ByteBuffer.allocate(MAX_TX_SIZE);
+    public byte[] getBytes() {
+        ByteBuffer buf = ByteBuffer.allocate(KBYTE);
         buf.put(ReissueTransaction.REISSUE).put(Transaction.V2).put(chainId)
                 .put(senderPublicKey.getPublicKey()).put(Base58.decode(assetId)).putLong(quantity)
                 .put((byte) (reissuable ? 1 : 0))
@@ -138,11 +132,5 @@ public class ReissueTransactionV2 extends TransactionWithProofs<ReissueTransacti
         result = 31 * result + (int) (getFee() ^ (getFee() >>> 32));
         result = 31 * result + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
         return result;
-    }
-
-    @Override
-    public ReissueTransactionV2 withProof(int index, ByteString proof) {
-        List<ByteString> newProofs = updateProofs(index, proof);
-        return new ReissueTransactionV2(senderPublicKey, chainId, assetId, quantity, reissuable, fee, timestamp, newProofs);
     }
 }

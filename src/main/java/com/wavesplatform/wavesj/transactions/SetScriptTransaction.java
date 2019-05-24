@@ -10,7 +10,7 @@ import java.util.List;
 
 import static com.wavesplatform.wavesj.ByteUtils.KBYTE;
 
-public class SetScriptTransaction extends TransactionWithProofs<SetScriptTransaction> {
+public class SetScriptTransaction extends TransactionWithProofs {
     public static final byte SET_SCRIPT = 13;
 
     private PublicKeyAccount senderPublicKey;
@@ -18,7 +18,6 @@ public class SetScriptTransaction extends TransactionWithProofs<SetScriptTransac
     private byte chainId;
     private long fee;
     private long timestamp;
-    private static final int MAX_TX_SIZE = 10 * KBYTE;
 
     @JsonCreator
     public SetScriptTransaction(@JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
@@ -45,7 +44,7 @@ public class SetScriptTransaction extends TransactionWithProofs<SetScriptTransac
         this.chainId = chainId;
         this.fee = fee;
         this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBodyBytes()))));
+        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBytes()))));
     }
 
     public PublicKeyAccount getSenderPublicKey() {
@@ -69,7 +68,7 @@ public class SetScriptTransaction extends TransactionWithProofs<SetScriptTransac
     }
 
     @Override
-    public byte[] getBodyBytes() {
+    public byte[] getBytes() {
         byte[] rawScript = script == null ? new byte[0] : Base64.decode(script);
         ByteBuffer buf = ByteBuffer.allocate(KBYTE + rawScript.length);
         buf.put(SetScriptTransaction.SET_SCRIPT).put(Transaction.V1).put(chainId);
@@ -116,11 +115,5 @@ public class SetScriptTransaction extends TransactionWithProofs<SetScriptTransac
         result = 31 * result + (int) (getFee() ^ (getFee() >>> 32));
         result = 31 * result + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
         return result;
-    }
-
-    @Override
-    public SetScriptTransaction withProof(int index, ByteString proof) {
-        List<ByteString> newProofs = updateProofs(index, proof);
-        return new SetScriptTransaction(senderPublicKey, script, chainId, fee, timestamp, newProofs);
     }
 }

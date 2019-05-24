@@ -11,9 +11,8 @@ import java.util.List;
 
 import static com.wavesplatform.wavesj.ByteUtils.KBYTE;
 
-public class DataTransaction extends TransactionWithProofs<DataTransaction> {
+public class DataTransaction extends TransactionWithProofs {
     public static final byte DATA = 12;
-    private static final int MAX_TX_SIZE = 150 * KBYTE;
 
     private final PublicKeyAccount senderPublicKey;
     private final Collection<DataEntry<?>> data;
@@ -41,7 +40,7 @@ public class DataTransaction extends TransactionWithProofs<DataTransaction> {
         this.data = data;
         this.fee = fee;
         this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBodyBytes()))));
+        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBytes()))));
     }
 
     public PublicKeyAccount getSenderPublicKey() {
@@ -49,13 +48,8 @@ public class DataTransaction extends TransactionWithProofs<DataTransaction> {
     }
 
     @Override
-    public int getTransactionMaxSize(){
-        return MAX_TX_SIZE;
-    }
-
-    @Override
-    public byte[] getBodyBytes() {
-        int datalen = getTransactionMaxSize();
+    public byte[] getBytes() {
+        int datalen = KBYTE;
         for (DataEntry<?> e : data) {
             datalen += e.size();
         }
@@ -69,13 +63,6 @@ public class DataTransaction extends TransactionWithProofs<DataTransaction> {
         buf.putLong(timestamp).putLong(fee);
         return ByteArraysUtils.getOnlyUsed(buf);
     }
-
-    @Override
-    public DataTransaction withProof(int index, ByteString proof) {
-        List<ByteString> newProofs = updateProofs(index, proof);
-        return new DataTransaction(senderPublicKey, data, fee, timestamp, newProofs);
-    }
-
 
     public Collection<DataEntry<?>> getData() {
         return data;
@@ -121,6 +108,4 @@ public class DataTransaction extends TransactionWithProofs<DataTransaction> {
         result = 31 * result + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
         return result;
     }
-
-
 }

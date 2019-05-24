@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,7 +24,7 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
     }
 
     @Override
-    public Transaction deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public Transaction deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         TreeNode treeNode = jsonParser.getCodec().readTree(jsonParser);
         int type = objectMapper.treeToValue(treeNode.get("type"), Integer.class);
         int version = objectMapper.treeToValue(treeNode.get("version"), Integer.class);
@@ -33,7 +34,7 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
             if (_chainId != null) chainId = _chainId;
         }
         // todo omfg remove after 0.15.4 release
-        ((ObjectNode) treeNode).put("chainId", chainId);
+        ((ObjectNode)treeNode).put("chainId", chainId);
 
         Class t = null;
         switch (type) {
@@ -109,15 +110,8 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
             case SponsorTransaction.SPONSOR:
                 t = SponsorTransaction.class;
                 break;
-            case ExchangeTransactionV1.EXCHANGE:
-                switch (version) {
-                    case Transaction.V1:
-                        t = ExchangeTransactionV1.class;
-                        break;
-                    case Transaction.V2:
-                        t = ExchangeTransactionV2.class;
-                        break;
-                }
+            case ExchangeTransaction.EXCHANGE:
+                t = ExchangeTransaction.class;
                 break;
             case TransferTransaction.TRANSFER:
                 switch (version) {
@@ -129,11 +123,8 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                         break;
                 }
                 break;
-            case InvokeScriptTransaction.CONTRACT_INVOKE:
-                t = InvokeScriptTransaction.class;
-                break;
-            case SetAssetScriptTransaction.SET_ASSET_SCRIPT:
-                t = SetAssetScriptTransaction.class;
+            case ContractInvocationTransaction.CONTRACT_INVOKE:
+                t = ContractInvocationTransaction.class;
                 break;
             default:
                 t = UnknownTransaction.class;

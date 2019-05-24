@@ -28,7 +28,7 @@ public class LeaseTransactionV1 extends TransactionWithSignature implements Leas
         this.amount = amount;
         this.fee = fee;
         this.timestamp = timestamp;
-        this.signature = new ByteString(senderPublicKey.sign(getBodyBytes()));
+        this.signature = new ByteString(senderPublicKey.sign(getBytes()));
     }
 
     @JsonCreator
@@ -67,7 +67,7 @@ public class LeaseTransactionV1 extends TransactionWithSignature implements Leas
     }
 
     @Override
-    public byte[] getBodyBytes() {
+    public byte[] getBytes() {
         ByteBuffer buf = ByteBuffer.allocate(KBYTE);
         buf.put(LeaseTransaction.LEASE);
         buf.put(senderPublicKey.getPublicKey());

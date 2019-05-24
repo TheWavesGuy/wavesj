@@ -19,7 +19,7 @@ public class ReissueTransactionV1 extends TransactionWithSignature implements Re
 
     @JsonCreator
     public ReissueTransactionV1(@JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
-                                @JsonProperty("address") String assetId,
+                                @JsonProperty("assetId") String assetId,
                                 @JsonProperty("quantity") long quantity,
                                 @JsonProperty("reissuable") boolean reissuable,
                                 @JsonProperty("fee") long fee,
@@ -46,7 +46,7 @@ public class ReissueTransactionV1 extends TransactionWithSignature implements Re
         this.reissuable = reissuable;
         this.fee = fee;
         this.timestamp = timestamp;
-        this.signature = new ByteString(senderPublicKey.sign(getBodyBytes()));
+        this.signature = new ByteString(senderPublicKey.sign(getBytes()));
     }
 
     public PublicKeyAccount getSenderPublicKey() {
@@ -74,7 +74,7 @@ public class ReissueTransactionV1 extends TransactionWithSignature implements Re
     }
 
     @Override
-    public byte[] getBodyBytes() {
+    public byte[] getBytes() {
         ByteBuffer buf = ByteBuffer.allocate(KBYTE);
         buf.put(ReissueTransaction.REISSUE)
                 .put(senderPublicKey.getPublicKey()).put(Base58.decode(assetId)).putLong(quantity)

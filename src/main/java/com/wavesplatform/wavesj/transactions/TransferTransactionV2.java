@@ -10,7 +10,7 @@ import java.util.List;
 
 import static com.wavesplatform.wavesj.ByteUtils.*;
 
-public class TransferTransactionV2 extends TransactionWithProofs<TransferTransactionV2> implements TransferTransaction {
+public class TransferTransactionV2 extends TransactionWithProofs implements TransferTransaction {
     private final PublicKeyAccount senderPublicKey;
     private final String recipient;
     private final long amount;
@@ -19,13 +19,12 @@ public class TransferTransactionV2 extends TransactionWithProofs<TransferTransac
     private final String feeAssetId;
     private final ByteString attachment;
     private final long timestamp;
-    private static final int MAX_TX_SIZE = KBYTE;
 
     @JsonCreator
     public TransferTransactionV2(@JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
                                  @JsonProperty("recipient") String recipient,
                                  @JsonProperty("amount") long amount,
-                                 @JsonProperty("address") String assetId,
+                                 @JsonProperty("assetId") String assetId,
                                  @JsonProperty("fee") long fee,
                                  @JsonProperty("feeAssetId") String feeAssetId,
                                  @JsonProperty("attachment") ByteString attachment,
@@ -58,7 +57,7 @@ public class TransferTransactionV2 extends TransactionWithProofs<TransferTransac
         this.feeAssetId = feeAssetId;
         this.attachment = attachment;
         this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBodyBytes()))));
+        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBytes()))));
     }
 
     public PublicKeyAccount getSenderPublicKey() {
@@ -94,13 +93,8 @@ public class TransferTransactionV2 extends TransactionWithProofs<TransferTransac
     }
 
     @Override
-    public int getTransactionMaxSize(){
-        return MAX_TX_SIZE;
-    }
-
-    @Override
-    public byte[] getBodyBytes() {
-        ByteBuffer buf = ByteBuffer.allocate(getTransactionMaxSize());
+    public byte[] getBytes() {
+        ByteBuffer buf = ByteBuffer.allocate(KBYTE);
         buf.put(TransferTransaction.TRANSFER).put(Transaction.V2);
         buf.put(senderPublicKey.getPublicKey());
         putAsset(buf, assetId);
@@ -123,11 +117,6 @@ public class TransferTransactionV2 extends TransactionWithProofs<TransferTransac
     @Override
     public byte getVersion() {
         return Transaction.V2;
-    }
-
-    public TransferTransactionV2 withProof(int index, ByteString proof) {
-        List<ByteString> newProofs = updateProofs(index, proof);
-        return new TransferTransactionV2(senderPublicKey,recipient, amount, assetId, fee, feeAssetId, attachment, timestamp, newProofs);
     }
 
     @Override

@@ -12,7 +12,7 @@ public abstract class TransactionWithBytesHashId implements Transaction {
     private int height;
 
     public ByteString getId() {
-        return new ByteString(hash(getBodyBytes()));
+        return new ByteString(hash(getBytes()));
     }
 
     public int getHeight() {

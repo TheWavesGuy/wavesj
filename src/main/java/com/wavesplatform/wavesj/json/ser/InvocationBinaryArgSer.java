@@ -10,7 +10,7 @@ import com.wavesplatform.wavesj.Base64;
 import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
-import static com.wavesplatform.wavesj.transactions.InvokeScriptTransaction.*;
+import static com.wavesplatform.wavesj.transactions.ContractInvocationTransaction.*;
 
 public class InvocationBinaryArgSer extends StdSerializer<BinaryArg> {
 

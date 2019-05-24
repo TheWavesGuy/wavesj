@@ -39,7 +39,7 @@ public class UnknownTransaction extends TransactionWithSignature {
     }
 
     @Override
-    public byte[] getBodyBytes() {
+    public byte[] getBytes() {
         throw new IllegalStateException("Can't build the bytes for unknown transaction");
     }
 
