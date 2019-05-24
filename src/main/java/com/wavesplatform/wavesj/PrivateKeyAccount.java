@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+import static com.wavesplatform.wavesj.Hash.*;
+
 public class PrivateKeyAccount extends PublicKeyAccount {
 
     private static final Curve25519 cipher = Curve25519.getInstance(Curve25519.BEST);
@@ -233,7 +235,7 @@ public class PrivateKeyAccount extends PublicKeyAccount {
      * @return Base58-encoded signature
      */
     public String sign(Transaction tx) {
-        return sign(tx.getBodyBytes());
+        return sign(tx.getBytes());
     }
 
     public String sign(byte[] bytes) {
@@ -248,7 +250,7 @@ public class PrivateKeyAccount extends PublicKeyAccount {
     public static String generateSeed() {
         byte[] bytes = new byte[21];
         new SecureRandom().nextBytes(bytes);
-        byte[] rhash = Hash.sha256(bytes, 0, 20);
+        byte[] rhash = hash(bytes, 0, 20, SHA256);
         bytes[20] = rhash[0];
         BigInteger rand = new BigInteger(bytes);
         BigInteger mask = new BigInteger(new byte[]{0, 0, 7, -1}); // 11 lower bits
@@ -265,10 +267,10 @@ public class PrivateKeyAccount extends PublicKeyAccount {
         // account seed from seed & nonce
         ByteBuffer buf = ByteBuffer.allocate(seed.getBytes().length + 4);
         buf.putInt(nonce).put(seed.getBytes());
-        byte[] accountSeed = Hash.secureHash(buf.array(), 0, buf.array().length);
+        byte[] accountSeed = secureHash(buf.array(), 0, buf.array().length);
 
         // private key from account seed & chainId
-        byte[] hashedSeed = Hash.sha256(accountSeed, 0, accountSeed.length);
+        byte[] hashedSeed = hash(accountSeed, 0, accountSeed.length, SHA256);
         byte[] privateKey = Arrays.copyOf(hashedSeed, 32);
         privateKey[0] &= 248;
         privateKey[31] &= 127;

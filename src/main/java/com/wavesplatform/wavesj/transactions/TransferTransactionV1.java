@@ -22,7 +22,7 @@ public class TransferTransactionV1 extends TransactionWithSignature implements T
     public TransferTransactionV1(@JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
                                  @JsonProperty("recipient") String recipient,
                                  @JsonProperty("amount") long amount,
-                                 @JsonProperty("address") String assetId,
+                                 @JsonProperty("assetId") String assetId,
                                  @JsonProperty("fee") long fee,
                                  @JsonProperty("feeAssetId") String feeAssetId,
                                  @JsonProperty("attachment") ByteString attachment,
@@ -55,7 +55,7 @@ public class TransferTransactionV1 extends TransactionWithSignature implements T
         this.feeAssetId = feeAssetId;
         this.attachment = attachment;
         this.timestamp = timestamp;
-        this.signature = new ByteString(senderPublicKey.sign(getBodyBytes()));
+        this.signature = new ByteString(senderPublicKey.sign(getBytes()));
     }
 
     public PublicKeyAccount getSenderPublicKey() {
@@ -91,7 +91,7 @@ public class TransferTransactionV1 extends TransactionWithSignature implements T
     }
 
     @Override
-    public byte[] getBodyBytes() {
+    public byte[] getBytes() {
         ByteBuffer buf = ByteBuffer.allocate(KBYTE);
         buf.put(TransferTransaction.TRANSFER);
         buf.put(senderPublicKey.getPublicKey());

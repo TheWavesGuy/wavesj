@@ -2,16 +2,16 @@ package com.wavesplatform.wavesj;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wavesplatform.wavesj.matcher.OrderV1;
+import com.wavesplatform.wavesj.matcher.Order;
 
 public class OrderStatusInfo {
     private long filled;
-    private OrderV1.Status status;
+    private Order.Status status;
 
     @JsonCreator
     private OrderStatusInfo(
             @JsonProperty("filledAmount") long filled,
-            @JsonProperty("status") OrderV1.Status status) {
+            @JsonProperty("status") Order.Status status) {
 
         this.status = status;
         this.filled = filled;
@@ -21,7 +21,7 @@ public class OrderStatusInfo {
         return filled;
     }
 
-    public OrderV1.Status getStatus() {
+    public Order.Status getStatus() {
         return status;
     }
 }

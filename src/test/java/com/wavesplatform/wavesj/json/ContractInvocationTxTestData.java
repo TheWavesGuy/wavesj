@@ -3,13 +3,25 @@ package com.wavesplatform.wavesj.json;
 import com.wavesplatform.wavesj.ByteString;
 import com.wavesplatform.wavesj.PublicKeyAccount;
 import com.wavesplatform.wavesj.json.ser.TransactionSerTest;
-import com.wavesplatform.wavesj.transactions.InvokeScriptTransaction;
+import com.wavesplatform.wavesj.transactions.ContractInvocationTransaction;
 
 import static com.wavesplatform.wavesj.Asset.toWavelets;
 import static java.util.Collections.singletonList;
 
-
-public final class InvokeScriptTransactionTxTestData {
+/**
+ * Account 1 (sender):
+ *      address=3MtEyGGB3XQ6zWB71cCN98fotHvjxxwNMu4
+ *      public=4QZkF9ejEsao1M8pNDAjoNqGsLsT3E6koXbNtCFxscce
+ *      private=3C8rjfZJnh2EHhKccvggPsoMXLw53DriT8EnjyRPJdhh
+ *      seed=sunset noodle trap mule mango can spring garment slot august photo champion paper host more
+ *
+ * Account 2 (recipient):
+ *      address=3Mvqinkpz45gprXcpgcMb9yqUv4jpBGMQMw
+ *      public=H9S6sPxueb6z1PB46VZJD6FbaTxsNfT8GHv5PPHbvDHx
+ *      private=HAWqLZA98pJPvwGZuomKUkNpgfzKt4HhfMdFWPXwjxuX
+ *      seed=creek extend car eight fat hole farm they behave element bag allow absurd clinic harbor
+ */
+public final class ContractInvocationTxTestData {
     private static final byte chainId = TransactionSerTest.chainId;
 
     public static final PublicKeyAccount SENDER_PUB =
@@ -18,17 +30,17 @@ public final class InvokeScriptTransactionTxTestData {
     public static final PublicKeyAccount RECIPIENT_PUB =
             new PublicKeyAccount("H9S6sPxueb6z1PB46VZJD6FbaTxsNfT8GHv5PPHbvDHx", chainId);
 
-    public static InvokeScriptTransaction txFull() {
-        return new InvokeScriptTransaction(
+    public static ContractInvocationTransaction txFull() {
+        return new ContractInvocationTransaction(
                 chainId,
                 SENDER_PUB,
                 RECIPIENT_PUB.getAddress(),
-                new InvokeScriptTransaction.FunctionCall("deposit")
+                new ContractInvocationTransaction.FunctionCall("deposit")
                         .addArg(10L)
                         .addArg("STRING_ARG")
                         .addArg(true)
                         .addArg(new ByteString("4QZkF9")),
-                singletonList(new InvokeScriptTransaction.Payment(toWavelets(10), null)),
+                singletonList(new ContractInvocationTransaction.Payment(toWavelets(10), null)),
                 toWavelets(0.005),
                 null,
                 1526983936610L,
@@ -58,13 +70,13 @@ public final class InvokeScriptTransactionTxTestData {
                 "\"height\":1234}";
     }
 
-    public static InvokeScriptTransaction txNoFunctionCall() {
-        return new InvokeScriptTransaction(
+    public static ContractInvocationTransaction txNoFunctionCall() {
+        return new ContractInvocationTransaction(
                 chainId,
                 SENDER_PUB,
                 RECIPIENT_PUB.getAddress(),
                 null,
-                singletonList(new InvokeScriptTransaction.Payment(toWavelets(10), null)),
+                singletonList(new ContractInvocationTransaction.Payment(toWavelets(10), null)),
                 toWavelets(0.005),
                 null,
                 1526983936610L,
@@ -86,12 +98,12 @@ public final class InvokeScriptTransactionTxTestData {
                 "\"height\":\"1234\"}";
     }
 
-    public static InvokeScriptTransaction txNoPayment() {
-        return new InvokeScriptTransaction(
+    public static ContractInvocationTransaction txNoPayment() {
+        return new ContractInvocationTransaction(
                 chainId,
                 SENDER_PUB,
                 RECIPIENT_PUB.getAddress(),
-                new InvokeScriptTransaction.FunctionCall("deposit")
+                new ContractInvocationTransaction.FunctionCall("deposit")
                         .addArg(10L)
                         .addArg("STRING_ARG")
                         .addArg(true)
@@ -115,7 +127,6 @@ public final class InvokeScriptTransactionTxTestData {
                         "{\"value\":\"STRING_ARG\",\"type\":\"string\"}," +
                         "{\"value\":true,\"type\":\"boolean\"}," +
                         "{\"value\":\"base64:hUKqkA==\",\"type\":\"binary\"}]}," +
-                "\"payment\":[],"+
                 "\"fee\":500000," +
                 "\"feeAssetId\":null," +
                 "\"timestamp\":1526983936610," +
@@ -125,8 +136,8 @@ public final class InvokeScriptTransactionTxTestData {
                 "\"height\":1234}";
     }
 
-    public static InvokeScriptTransaction txNoFunctionCallAndPayment() {
-        return new InvokeScriptTransaction(
+    public static ContractInvocationTransaction txNoFunctionCallAndPayment() {
+        return new ContractInvocationTransaction(
                 chainId,
                 SENDER_PUB,
                 RECIPIENT_PUB.getAddress(),

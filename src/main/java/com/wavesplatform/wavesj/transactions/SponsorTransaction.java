@@ -10,40 +10,40 @@ import java.util.List;
 
 import static com.wavesplatform.wavesj.ByteUtils.KBYTE;
 
-public class SponsorTransaction extends TransactionWithProofs<Transaction> {
+public class SponsorTransaction extends TransactionWithProofs {
     public static final byte SPONSOR = 14;
     private PublicKeyAccount senderPublicKey;
     private String assetId;
-    private long minSponsoredAssetFee;
+    private long minAssetFee;
     private long fee;
     private long timestamp;
 
     @JsonCreator
     public SponsorTransaction(@JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
                               @JsonProperty("assetId") String assetId,
-                              @JsonProperty("minSponsoredAssetFee") long minSponsoredAssetFee,
+                              @JsonProperty("minSponsoredAssetFee") long minAssetFee,
                               @JsonProperty("fee") long fee,
                               @JsonProperty("timestamp") long timestamp,
                               @JsonProperty("proofs") List<ByteString> proofs) {
         setProofs(proofs);
         this.senderPublicKey = senderPublicKey;
         this.assetId = assetId;
-        this.minSponsoredAssetFee = minSponsoredAssetFee;
+        this.minAssetFee = minAssetFee;
         this.fee = fee;
         this.timestamp = timestamp;
     }
 
     public SponsorTransaction(PrivateKeyAccount senderPublicKey,
                               String assetId,
-                              long minSponsoredAssetFee,
+                              long minAssetFee,
                               long fee,
                               long timestamp) {
         this.senderPublicKey = senderPublicKey;
         this.assetId = assetId;
-        this.minSponsoredAssetFee = minSponsoredAssetFee;
+        this.minAssetFee = minAssetFee;
         this.fee = fee;
         this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBodyBytes()))));
+        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPublicKey.sign(getBytes()))));
     }
 
 
@@ -55,8 +55,8 @@ public class SponsorTransaction extends TransactionWithProofs<Transaction> {
         return Asset.toJsonObject(assetId);
     }
 
-    public long getMinSponsoredAssetFee() {
-        return minSponsoredAssetFee;
+    public long getMinAssetFee() {
+        return minAssetFee;
     }
 
     public long getFee() {
@@ -68,11 +68,11 @@ public class SponsorTransaction extends TransactionWithProofs<Transaction> {
     }
 
     @Override
-    public byte[] getBodyBytes() {
+    public byte[] getBytes() {
         ByteBuffer buf = ByteBuffer.allocate(KBYTE);
         buf.put(SponsorTransaction.SPONSOR).put(Transaction.V1)
                 .put(senderPublicKey.getPublicKey()).put(Base58.decode(assetId))
-                .putLong(minSponsoredAssetFee).putLong(fee).putLong(timestamp);
+                .putLong(minAssetFee).putLong(fee).putLong(timestamp);
         return ByteArraysUtils.getOnlyUsed(buf);
     }
 
@@ -93,7 +93,7 @@ public class SponsorTransaction extends TransactionWithProofs<Transaction> {
 
         SponsorTransaction that = (SponsorTransaction) o;
 
-        if (getMinSponsoredAssetFee() != that.getMinSponsoredAssetFee()) return false;
+        if (getMinAssetFee() != that.getMinAssetFee()) return false;
         if (getFee() != that.getFee()) return false;
         if (getTimestamp() != that.getTimestamp()) return false;
         if (getSenderPublicKey() != null ? !getSenderPublicKey().equals(that.getSenderPublicKey()) : that.getSenderPublicKey() != null)
@@ -105,15 +105,9 @@ public class SponsorTransaction extends TransactionWithProofs<Transaction> {
     public int hashCode() {
         int result = getSenderPublicKey() != null ? getSenderPublicKey().hashCode() : 0;
         result = 31 * result + (getAssetId() != null ? getAssetId().hashCode() : 0);
-        result = 31 * result + (int) (getMinSponsoredAssetFee() ^ (getMinSponsoredAssetFee() >>> 32));
+        result = 31 * result + (int) (getMinAssetFee() ^ (getMinAssetFee() >>> 32));
         result = 31 * result + (int) (getFee() ^ (getFee() >>> 32));
         result = 31 * result + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
         return result;
-    }
-
-    @Override
-    public Transaction withProof(int index, ByteString proof) {
-        List<ByteString> newProofs = updateProofs(index, proof);
-        return new SponsorTransaction(senderPublicKey, assetId, minSponsoredAssetFee,fee,timestamp, newProofs);
     }
 }

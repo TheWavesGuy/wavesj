@@ -5,49 +5,44 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.wavesplatform.wavesj.*;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import static com.wavesplatform.wavesj.ByteArraysUtils.getOnlyUsed;
-import static com.wavesplatform.wavesj.ByteUtils.BytesFormatter.LENGTH_AS_SHORT;
 import static com.wavesplatform.wavesj.ByteUtils.*;
+import static com.wavesplatform.wavesj.ByteUtils.BytesFormatter.LENGTH_AS_SHORT;
+import static com.wavesplatform.wavesj.ByteUtils.putAsset;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
-public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptTransaction> {
+public class ContractInvocationTransaction extends TransactionWithProofs {
     public static final byte CONTRACT_INVOKE = 16;
 
-
-    private static final int MAX_TX_SIZE = 5 * KBYTE;
     private byte chainId;
     private PublicKeyAccount senderPublicKey;
-    private @JsonProperty("dApp")
-    String dApp;
+    private @JsonProperty("dApp") String recipient;
     private FunctionCall call;
-    private @JsonProperty("payment")
-    List<Payment> payments = new ArrayList<Payment>();
+    private @JsonProperty("payment") List<Payment> payments = new ArrayList<Payment>();
     private long fee;
     private String feeAssetId;
     private long timestamp;
 
     @JsonCreator
-    public InvokeScriptTransaction(@JsonProperty("chainId") byte chainId,
-                                   @JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
-                                   @JsonProperty("dApp") String dApp,
-                                   @JsonProperty("call") FunctionCall call,
-                                   @JsonProperty("payment") List<Payment> payments,
-                                   @JsonProperty("fee") long fee,
-                                   @JsonProperty("feeAssetId") String feeAssetId,
-                                   @JsonProperty("timestamp") long timestamp,
-                                   @JsonProperty("proofs") List<ByteString> proofs) {
+    public ContractInvocationTransaction(@JsonProperty("chainId") byte chainId,
+                                  @JsonProperty("senderPublicKey") PublicKeyAccount senderPublicKey,
+                                  @JsonProperty("dappAddress") String recipient,
+                                  @JsonProperty("call") FunctionCall call,
+                                  @JsonProperty("payment") List<Payment> payments,
+                                  @JsonProperty("fee") long fee,
+                                  @JsonProperty("feeAssetId") String feeAssetId,
+                                  @JsonProperty("timestamp") long timestamp,
+                                  @JsonProperty("proofs") List<ByteString> proofs) {
         setProofs(proofs);
         this.chainId = chainId;
         this.senderPublicKey = senderPublicKey;
-        this.dApp = dApp;
+        this.recipient = recipient;
         this.call = call;
         this.payments = payments != null ? payments : new ArrayList<Payment>();
         this.fee = fee;
@@ -55,81 +50,46 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
         this.timestamp = timestamp;
     }
 
-    public InvokeScriptTransaction(byte chainId,
-                                   PrivateKeyAccount senderPrivateKey,
-                                   String dApp,
-                                   FunctionCall call,
-                                   List<Payment> payments,
-                                   long fee,
-                                   String feeAssetId,
-                                   long timestamp) {
+    public ContractInvocationTransaction(byte chainId, PublicKeyAccount senderPublicKey, String recipient,
+                                         String function, long fee, String feeAssetId, long timestamp) {
         this.chainId = chainId;
-        this.senderPublicKey = new PublicKeyAccount(senderPrivateKey.getPublicKey(), senderPrivateKey.getChainId());
-        this.dApp = dApp;
-        this.call = call;
-        this.payments = payments;
+        this.senderPublicKey = senderPublicKey;
+        this.recipient = recipient;
+        if (function != null) {
+            this.call = new FunctionCall(function);
+        }
         this.fee = fee;
         this.feeAssetId = feeAssetId;
         this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPrivateKey.sign(getBodyBytes()))));
     }
 
-    public InvokeScriptTransaction(byte chainId, PrivateKeyAccount senderPrivateKey, String dApp, FunctionCall call,
-                                   long fee, String feeAssetId, long timestamp) {
-        this.chainId = chainId;
-        this.senderPublicKey = new PublicKeyAccount(senderPrivateKey.getPublicKey(), senderPrivateKey.getChainId());
-        this.dApp = dApp;
-        this.call = call;
-        this.fee = fee;
-        this.feeAssetId = feeAssetId;
-        this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPrivateKey.sign(getBodyBytes()))));
-    }
-
-    public InvokeScriptTransaction(byte chainId, PrivateKeyAccount senderPrivateKey, String dApp, String functionName,
-                                   long fee, String feeAssetId, long timestamp) {
-        this.chainId = chainId;
-        this.senderPublicKey = new PublicKeyAccount(senderPrivateKey.getPublicKey(), senderPrivateKey.getChainId());
-        this.dApp = dApp;
-        this.call = functionName == null ? null : new FunctionCall(functionName);
-        this.fee = fee;
-        this.feeAssetId = feeAssetId;
-        this.timestamp = timestamp;
-        this.proofs = Collections.unmodifiableList(Collections.singletonList(new ByteString(senderPrivateKey.sign(getBodyBytes()))));
-    }
-
-    public InvokeScriptTransaction withArg(long val) {
+    public ContractInvocationTransaction withArg(long val) {
         call.addArg(val);
         return this;
     }
 
-    public InvokeScriptTransaction withArg(String val) {
+    public ContractInvocationTransaction withArg(String val) {
         call.addArg(val);
         return this;
     }
 
-    public InvokeScriptTransaction withArg(boolean val) {
+    public ContractInvocationTransaction withArg(boolean val) {
         call.addArg(val);
         return this;
     }
 
-    public InvokeScriptTransaction withArg(ByteString val) {
+    public ContractInvocationTransaction withArg(ByteString val) {
         call.addArg(val);
         return this;
     }
 
-    public InvokeScriptTransaction withPayment(long amount, String assetId) {
+    public ContractInvocationTransaction withPayment(long amount, String assetId) {
         payments.add(new Payment(amount, assetId));
         return this;
     }
 
-
-    public static int unsignedToBytes(byte b) {
-        return b & 0xFF;
-    }
-
-    public InvokeScriptTransaction sign(PrivateKeyAccount senderPrivateKey) {
-        this.proofs = unmodifiableList(singletonList(new ByteString(senderPrivateKey.sign(getBodyBytes()))));
+    public ContractInvocationTransaction sign(PrivateKeyAccount senderPrivateKey) {
+        this.proofs = unmodifiableList(singletonList(new ByteString(senderPrivateKey.sign(getBytes()))));
         return this;
     }
 
@@ -137,12 +97,12 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
         return chainId;
     }
 
-    public String getdApp() {
-        return dApp;
+    public String getRecipient() {
+        return recipient;
     }
 
     public String getFeeAssetId() {
-        return Asset.toJsonObject(feeAssetId);
+        return feeAssetId;
     }
 
     @Override
@@ -179,33 +139,19 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
     }
 
     @Override
-    public InvokeScriptTransaction withProof(int index, ByteString proof) {
-        List<ByteString> newProofs = updateProofs(index, proof);
-        return new InvokeScriptTransaction(chainId, senderPublicKey, dApp, call, payments, fee, feeAssetId, timestamp, newProofs);
-    }
-
-
-    @Override
-    public int getTransactionMaxSize() {
-        return MAX_TX_SIZE;
-    }
-
-    @Override
-    public byte[] getBodyBytes() {
-        ByteBuffer buf = ByteBuffer.allocate(getTransactionMaxSize());
+    public byte[] getBytes() {
+        ByteBuffer buf = ByteBuffer.allocate(KBYTE);
         buf.put(CONTRACT_INVOKE).put(Transaction.V1).put(chainId);
         buf.put(senderPublicKey.getPublicKey());
-        ByteUtils.putRecipient(buf, chainId, dApp);
+        ByteUtils.putRecipient(buf, chainId, recipient);
 
-        if (call == null) {
-            buf.put((byte) 0);
-        } else {
-            buf.put((byte) 1);
+        ByteUtils.putOptionalFlag(buf, call);
+        if (call != null) {
             call.write(buf);
         }
 
         buf.putShort(toShort(payments.size()));
-        for (Payment payment : payments) {
+        for (Payment payment: payments) {
             payment.write(buf);
         }
 
@@ -221,15 +167,16 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        InvokeScriptTransaction that = (InvokeScriptTransaction) o;
+        ContractInvocationTransaction that = (ContractInvocationTransaction) o;
 
         if (getChainId() != that.getChainId()) return false;
         if (getFee() != that.getFee()) return false;
         if (getTimestamp() != that.getTimestamp()) return false;
         if (!getSenderPublicKey().equals(that.getSenderPublicKey())) return false;
-        if (!getdApp().equals(that.getdApp())) return false;
+        if (!getRecipient().equals(that.getRecipient())) return false;
         if (getCall() != null ? !getCall().equals(that.getCall()) : that.getCall() != null) return false;
-        if (!getPayments().equals(that.getPayments())) return false;
+        if (getPayments() != null ? !getPayments().equals(that.getPayments()) : that.getPayments() != null)
+            return false;
         return getFeeAssetId() != null ? getFeeAssetId().equals(that.getFeeAssetId()) : that.getFeeAssetId() == null;
     }
 
@@ -237,9 +184,9 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
     public int hashCode() {
         int result = (int) getChainId();
         result = 31 * result + getSenderPublicKey().hashCode();
-        result = 31 * result + getdApp().hashCode();
+        result = 31 * result + getRecipient().hashCode();
         result = 31 * result + (getCall() != null ? getCall().hashCode() : 0);
-        result = 31 * result + getPayments().hashCode();
+        result = 31 * result + (getPayments() != null ? getPayments().hashCode() : 0);
         result = 31 * result + (int) (getFee() ^ (getFee() >>> 32));
         result = 31 * result + (getFeeAssetId() != null ? getFeeAssetId().hashCode() : 0);
         result = 31 * result + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
@@ -250,14 +197,10 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
     public static class FunctionCall implements Serializable {
         private static final byte E_FUNCALL = (byte) 9;
 
-        /**
-         * WARNING! Unsupported in current implementation. Function header for native function
-         */
+        /** WARNING! Unsupported in current implementation. Function header for native function */
         private static final byte FH_NATIVE = (byte) 0;
 
-        /**
-         * Function header for custom (user's) function
-         */
+        /** Function header for custom (user's) function */
         private static final byte FH_USER = (byte) 1;
 
         @JsonProperty("function")
@@ -272,9 +215,9 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
         }
 
         public FunctionCall(String name) {
-//            if (name == null || name.isEmpty()) {
-//                throw new IllegalArgumentException("Function name couldn't be null or empty");
-//            }
+            if (name == null || name.isEmpty()) {
+                throw new IllegalArgumentException("Function name couldn't be null or empty");
+            }
             this.name = name;
         }
 
@@ -308,52 +251,8 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
 
             // write function's arguments
             buf.putInt(args.size());
-            for (FunctionalArg<?> arg : args) {
+            for (FunctionalArg<?> arg: args) {
                 arg.write(buf);
-            }
-        }
-
-        public ByteBuffer toBytes() {
-            final ByteBuffer buf;
-            try {
-                final int nameLength = name.getBytes("UTF-8").length;
-                int argsLength = 4;
-                for (FunctionalArg<?> arg : args) argsLength += arg.bytesSize();
-                buf = ByteBuffer.allocate(2 + 4 + nameLength + 4 + argsLength);
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-
-            // special bytes to indicate function call. Used in Serde serializer
-            buf.put(E_FUNCALL);
-            buf.put(FH_USER);
-
-            // write function name
-            ByteUtils.putString(buf, name, ByteUtils.BytesFormatter.LENGTH_AS_INT);
-
-            // write function's arguments
-            buf.putInt(args.size());
-            for (FunctionalArg<?> arg : args) {
-                arg.write(buf);
-            }
-            buf.flip();
-            return buf.compact().asReadOnlyBuffer();
-        }
-
-        public static FunctionCall fromBytes(final ByteBuffer buf) {
-            buf.position(buf.position() + 2);
-            final byte[] nameBytes = new byte[buf.getInt()];
-            buf.get(nameBytes);
-
-            final int argsSize = buf.getInt();
-            assert argsSize >= 0 && argsSize <= 22;
-            final LinkedList<FunctionalArg<?>> args = new LinkedList<FunctionalArg<?>>();
-            for (int i = 0; i < argsSize; i++) args.add(FunctionalArg.fromBytes(buf));
-
-            try {
-                return new FunctionCall(new String(nameBytes, "UTF-8"), args);
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
             }
         }
 
@@ -389,8 +288,8 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
-            include = JsonTypeInfo.As.EXISTING_PROPERTY,
-            property = "type")
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "type")
     @JsonSubTypes({
             @Type(value = LongArg.class, name = LongArg.T_LONG),
             @Type(value = BinaryArg.class, name = BinaryArg.T_BINARY),
@@ -408,38 +307,6 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
         }
 
         public abstract void write(ByteBuffer buf);
-
-        public static FunctionalArg<?> fromBytes(ByteBuffer buf) {
-            switch (buf.get()) {
-                case StringArg.E_STRING:
-                    final byte[] string = new byte[buf.getInt()];
-                    buf.get(string);
-                    try {
-                        return new StringArg(new String(string, "UTF-8"));
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                case BinaryArg.E_BYTES:
-                    final byte[] bytes = new byte[buf.getInt()];
-                    buf.get(bytes);
-                    return new BinaryArg(new ByteString(bytes));
-
-                case LongArg.E_LONG:
-                    return new LongArg(buf.getLong());
-
-                case BooleanArg.E_TRUE:
-                    return new BooleanArg(true);
-
-                case BooleanArg.E_FALSE:
-                    return new BooleanArg(false);
-
-                default:
-                    throw new IllegalArgumentException("Data type not supported");
-            }
-        }
-
-        public abstract int bytesSize();
 
         public T getValue() {
             return value;
@@ -485,11 +352,6 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
             buf.put(E_LONG);
             buf.putLong(value);
         }
-
-        @Override
-        public int bytesSize() {
-            return 1 + 8;
-        }
     }
 
     public static class BinaryArg extends FunctionalArg<ByteString> {
@@ -512,11 +374,6 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
             buf.put(E_BYTES);
             ByteUtils.putBytes(buf, binary, ByteUtils.BytesFormatter.LENGTH_AS_INT);
         }
-
-        @Override
-        public int bytesSize() {
-            return 1 + 4 + value.getBytes().length;
-        }
     }
 
     public static class StringArg extends FunctionalArg<String> {
@@ -537,15 +394,6 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
         public void write(ByteBuffer buf) {
             buf.put(E_STRING);
             ByteUtils.putString(buf, value, ByteUtils.BytesFormatter.LENGTH_AS_INT);
-        }
-
-        @Override
-        public int bytesSize() {
-            try {
-                return 1 + 4 + value.getBytes("UTF-8").length;
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
@@ -572,11 +420,6 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
                 buf.put(E_FALSE);
             }
         }
-
-        @Override
-        public int bytesSize() {
-            return 1;
-        }
     }
 
     public static class Payment implements Serializable {
@@ -602,7 +445,7 @@ public class InvokeScriptTransaction extends TransactionWithProofs<InvokeScriptT
         }
 
         public String getAssetId() {
-            return Asset.toJsonObject(assetId);
+            return assetId;
         }
 
         @Override
