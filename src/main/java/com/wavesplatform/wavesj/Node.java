@@ -9,7 +9,6 @@ import com.wavesplatform.wavesj.json.WavesJsonMapper;
 import com.wavesplatform.wavesj.matcher.CancelOrder;
 import com.wavesplatform.wavesj.matcher.DeleteOrder;
 import com.wavesplatform.wavesj.matcher.Order;
-import com.wavesplatform.wavesj.transactions.InvokeScriptTransaction;
 import com.wavesplatform.wavesj.transactions.LeaseTransaction;
 import com.wavesplatform.wavesj.transactions.TransferTransactionV2;
 import org.apache.http.HttpResponse;
@@ -178,6 +177,10 @@ public class Node {
 
     public AssetDetails getAssetDetails(String assetId) throws IOException {
         return wavesJsonMapper.convertValue(send("/assets/details/" + assetId), AssetDetails.class);
+    }
+
+    public List<Transaction> getActiveLeases(String address) throws IOException {
+        return wavesJsonMapper.convertValue(send("/leasing/active/" + address), new TypeReference<List<Transaction>>(){});
     }
 
 
