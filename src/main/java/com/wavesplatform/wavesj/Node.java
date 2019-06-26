@@ -61,6 +61,8 @@ public class Node {
     };
     private static final TypeReference<DataEntry> ADDRESS_DATA_BY_KEY = new TypeReference<DataEntry>() {
     };
+    private static final TypeReference<CalculatedFee> CALCULATED_FEE = new TypeReference<CalculatedFee>() {
+    };
 
     private final URI uri;
     private final WavesJsonMapper wavesJsonMapper;
@@ -197,6 +199,10 @@ public class Node {
 
     public Map<String, Object> getTransactionData(String txId) throws IOException {
         return wavesJsonMapper.convertValue(send("/transactions/info/" + txId), TX_INFO);
+    }
+
+    public CalculatedFee calculateFee(Transaction tx) throws IOException {
+        return parse(exec(request(tx, "/transactions/calculateFee")), CALCULATED_FEE);
     }
 
     /**
@@ -585,6 +591,12 @@ public class Node {
         } else {
             throw new IllegalArgumentException();
         }
+        HttpPost request = new HttpPost(uri.resolve(endpoint));
+        request.setEntity(new StringEntity(wavesJsonMapper.writeValueAsString(obj), ContentType.APPLICATION_JSON));
+        return request;
+    }
+
+    private HttpUriRequest request(ApiJson obj, String endpoint) throws JsonProcessingException {
         HttpPost request = new HttpPost(uri.resolve(endpoint));
         request.setEntity(new StringEntity(wavesJsonMapper.writeValueAsString(obj), ContentType.APPLICATION_JSON));
         return request;

@@ -4,8 +4,6 @@ import com.wavesplatform.wavesj.matcher.Order;
 import com.wavesplatform.wavesj.transactions.MassTransferTransaction;
 import com.wavesplatform.wavesj.transactions.TransferTransactionV1;
 import com.wavesplatform.wavesj.transactions.TransferTransactionV2;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -313,5 +311,15 @@ public class NodeTest {
         assertEquals(expectedAccountSeed, Base58.encode(keccak));
         assertThat(Base58.decode(expectedAccountSeed), equalTo(keccak));
 
+    }
+
+    @Test
+    public void testCalculateFee() throws URISyntaxException, IOException {
+        Node node = new Node();
+        CalculatedFee expectedCalculatedFee = new CalculatedFee(null, 200000L);
+        List<Transfer> tx = Arrays.asList(new Transfer(bob.getAddress(), 100000));
+        MassTransferTransaction masstx = Transactions.makeMassTransferTx(alice ,bob.getAddress(), tx, 100000, "");
+        CalculatedFee calculatedFee = node.calculateFee(masstx);
+        assertEquals(expectedCalculatedFee, calculatedFee);
     }
 }
