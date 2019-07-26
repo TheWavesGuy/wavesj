@@ -63,6 +63,8 @@ public class Node {
     };
     private static final TypeReference<CalculatedFee> CALCULATED_FEE = new TypeReference<CalculatedFee>() {
     };
+    private static final TypeReference<List<Block>> BLOCK_LIST = new TypeReference<List<Block>>() {
+    };
 
     private final URI uri;
     private final WavesJsonMapper wavesJsonMapper;
@@ -241,6 +243,20 @@ public class Node {
      */
     public Block getBlock(int height) throws IOException {
         return wavesJsonMapper.convertValue(send("/blocks/at/" + height), Block.class);
+    }
+
+    /**
+     * Returns blocks at specified heights.
+     *
+     * @param from start block height
+     * @param to end block height
+     * @return block object
+     * @throws IOException if no block exists at the given height
+     */
+    public List<Block> getBlockSequence(int from, int to) throws IOException {
+        String path = String.format("/blocks/seq/%s/%s", from, to);
+        HttpResponse r = exec(request(path));
+        return parse(r, BLOCK_LIST);
     }
 
     /**
