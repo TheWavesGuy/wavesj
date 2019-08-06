@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.wavesplatform.wavesj.json.WavesJsonMapper;
 import com.wavesplatform.wavesj.matcher.CancelOrder;
 import com.wavesplatform.wavesj.matcher.DeleteOrder;
@@ -312,6 +313,10 @@ public class Node {
 
     public String getAddrByAlias(String alias) throws IOException {
         return send("/alias/by-alias/" + alias, "address").textValue();
+    }
+
+    public List<String> getAliasbyAddress(String address) throws IOException {
+        return wavesJsonMapper.convertValue(send("/alias/by-address/" + address), new TypeReference<List<String>>() {});
     }
 
     /**
