@@ -26,7 +26,7 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
     public Transaction deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         TreeNode treeNode = jsonParser.getCodec().readTree(jsonParser);
         int type = objectMapper.treeToValue(treeNode.get("type"), Integer.class);
-        int version = objectMapper.treeToValue(treeNode.get("version"), Integer.class);
+        int version = treeNode.get("version")!=null ? objectMapper.treeToValue(treeNode.get("version"), Integer.class) : 0;
         byte chainId = objectMapper.getChainId();
         if (treeNode.get("chainId") != null && !(treeNode.get("chainId") instanceof NullNode)) {
             Byte _chainId = objectMapper.treeToValue(treeNode.get("chainId"), Byte.class);
