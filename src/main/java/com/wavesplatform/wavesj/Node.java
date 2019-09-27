@@ -123,6 +123,10 @@ public class Node {
                 .build();
     }
 
+    public byte getChainId(){
+        return chainId;
+    }
+
     public String getVersion() throws IOException {
         return send("/node/version", "version").asText();
     }
