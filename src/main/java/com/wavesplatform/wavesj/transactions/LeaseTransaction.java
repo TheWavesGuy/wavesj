@@ -4,7 +4,7 @@ import com.wavesplatform.wavesj.Signable;
 import com.wavesplatform.wavesj.Transaction;
 import com.wavesplatform.wavesj.WithId;
 
-public interface LeaseTransaction extends Transaction, Signable, WithId {
+public interface LeaseTransaction extends Transaction, Signable, WithId, WithRecipient {
     static final byte LEASE = 8;
 
     String getRecipient();

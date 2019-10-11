@@ -5,7 +5,7 @@ import com.wavesplatform.wavesj.Signable;
 import com.wavesplatform.wavesj.Transaction;
 import com.wavesplatform.wavesj.WithId;
 
-public interface TransferTransaction extends Transaction, Signable, WithId {
+public interface TransferTransaction extends Transaction, Signable, WithId, WithRecipient {
     static final byte TRANSFER = 4;
 
     String getRecipient();
