@@ -1,29 +1,8 @@
-# WavesJ
+# WavesJ for WavesFX
 A Java library for interacting with the Waves blockchain.
 
 Supports node interaction, offline transaction signing, Matcher orders, and creating addresses and keys.
 
-## Using WavesJ in your project
-Use the codes below to add WavesJ as a dependency for your project.
-
-##### Maven:
-```
-<dependency>
-    <groupId>com.wavesplatform</groupId>
-    <artifactId>wavesj</artifactId>
-    <version>0.14.1</version>
-</dependency>
-```
-
-##### Gradle:
-```
-compile group: 'com.wavesplatform', name: 'wavesj', version: '0.14.1'
-```
-
-##### SBT:
-```
-libraryDependencies += "com.wavesplatform" % "wavesj" % "0.14.1"
-```
 
 [This library's page at Maven Central](https://mvnrepository.com/artifact/com.wavesplatform/wavesj)
 
