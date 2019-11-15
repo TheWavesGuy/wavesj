@@ -324,6 +324,25 @@ public class Node {
     }
 
     /**
+     * Returns current blockchain rewards info
+     *
+     * @return @return Rewards
+     * @throws IOException
+     */
+    public Rewards getBlockchainRewards() throws IOException {
+        return wavesJsonMapper.convertValue(send("/blockchain/rewards"), Rewards.class);
+    }
+
+    /**
+     * Returns miner’s reward status at height
+     *
+     * @return Rewards
+     */
+    public Rewards getBlockchainRewards(int height) throws IOException {
+        return wavesJsonMapper.convertValue(send(String.format("/blockchain/rewards/%d", height)), Rewards.class);
+    }
+
+    /**
      * Sends a signed object and returns its ID.
      *
      * @param tx signed object (as created by static methods in Transaction class)
@@ -512,7 +531,7 @@ public class Node {
     }
 
     public Order createOrder(PrivateKeyAccount account, String matcherKey, AssetPair assetPair, Order.Type orderType,
-                               long price, long amount, long expiration, long matcherFee) throws IOException {
+                             long price, long amount, long expiration, long matcherFee) throws IOException {
         Order tx = Transactions.makeOrder(account, matcherKey, orderType, assetPair, price, amount, expiration, matcherFee);
         JsonNode tree = parse(exec(request(tx)));
         // fix order status
