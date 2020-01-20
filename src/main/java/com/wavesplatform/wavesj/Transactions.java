@@ -88,13 +88,14 @@ public class Transactions {
         return makeLeaseTx(sender, recipient, amount, fee, System.currentTimeMillis());
     }
 
-    public static LeaseCancelTransaction makeLeaseCancelTx(PrivateKeyAccount sender, byte chainId, String leaseId, long fee, long timestamp) {
+    public static LeaseCancelTransactionV2 makeLeaseCancelTx(PrivateKeyAccount sender, byte chainId, String leaseId, long fee, long timestamp) {
         return new LeaseCancelTransactionV2(sender, chainId, leaseId, fee, timestamp);
     }
 
     public static LeaseCancelTransaction makeLeaseCancelTx(PrivateKeyAccount sender, byte chainId, String leaseId, long fee) {
         return makeLeaseCancelTx(sender, chainId, leaseId, fee, System.currentTimeMillis());
     }
+
 
     public static AliasTransaction makeAliasTx(PrivateKeyAccount sender, String alias, byte chainId, long fee, long timestamp) {
         return new AliasTransactionV2(sender, new Alias(alias, chainId), fee, timestamp);
