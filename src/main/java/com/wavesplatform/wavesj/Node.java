@@ -10,6 +10,7 @@ import com.wavesplatform.wavesj.json.WavesJsonMapper;
 import com.wavesplatform.wavesj.matcher.CancelOrder;
 import com.wavesplatform.wavesj.matcher.DeleteOrder;
 import com.wavesplatform.wavesj.matcher.Order;
+import com.wavesplatform.wavesj.transactions.InvokeScriptTransaction;
 import com.wavesplatform.wavesj.transactions.LeaseTransaction;
 import com.wavesplatform.wavesj.transactions.TransferTransactionV2;
 import org.apache.http.HttpResponse;
@@ -123,7 +124,11 @@ public class Node {
                 .build();
     }
 
-    public byte getChainId(){
+    public URI getUri() {
+        return uri;
+    }
+
+    public byte getChainId() {
         return chainId;
     }
 
@@ -531,13 +536,46 @@ public class Node {
     }
 
     public Order createOrder(PrivateKeyAccount account, String matcherKey, AssetPair assetPair, Order.Type orderType,
-                             long price, long amount, long expiration, long matcherFee) throws IOException {
+                               long price, long amount, long expiration, long matcherFee) throws IOException {
         Order tx = Transactions.makeOrder(account, matcherKey, orderType, assetPair, price, amount, expiration, matcherFee);
         JsonNode tree = parse(exec(request(tx)));
         // fix order status
         ObjectNode message = (ObjectNode) tree.get("message");
         message.put("status", tree.get("status").asText());
         return wavesJsonMapper.treeToValue(tree.get("message"), Order.class);
+    }
+
+    public Order placeOrder(PrivateKeyAccount account, String matcherKey, AssetPair assetPair, Order.Type orderType,
+                             long price, long amount, long expiration, long matcherFee, boolean isMarket) throws IOException {
+        Order tx = Transactions.makeOrder(account, matcherKey, orderType, assetPair, price, amount, expiration, matcherFee);
+        JsonNode tree = parse(exec(matcherRequest(tx, isMarket)));        // fix order status
+        ObjectNode message = (ObjectNode) tree.get("message");
+        message.put("status", tree.get("status").asText());
+        return wavesJsonMapper.treeToValue(tree.get("message"), Order.class);
+    }
+
+    public Order placeOrder(PrivateKeyAccount account, String matcherKey, AssetPair assetPair, Order.Type orderType,
+                            long price, long amount, long expiration, long matcherFee, String matcherFeeAssetId, boolean isMarket) throws IOException {
+        Order tx = Transactions.makeOrder(account, matcherKey, orderType, assetPair, price, amount, expiration, matcherFee, matcherFeeAssetId);
+        JsonNode tree = parse(exec(matcherRequest(tx, isMarket)));        // fix order status
+        ObjectNode message = (ObjectNode) tree.get("message");
+        message.put("status", tree.get("status").asText());
+        return wavesJsonMapper.treeToValue(tree.get("message"), Order.class);
+    }
+
+    public Order placeLimitOrder(PrivateKeyAccount account, String matcherKey, AssetPair assetPair, Order.Type orderType,
+                                 long price, long amount, long expiration, long matcherFee, String matcherFeeAssetId) throws IOException {
+        return placeOrder(account, matcherKey, assetPair, orderType, price, amount, expiration, matcherFee, matcherFeeAssetId, false);
+    }
+
+    public Order placeLimitOrder(PrivateKeyAccount account, String matcherKey, AssetPair assetPair, Order.Type orderType,
+                             long price, long amount, long expiration, long matcherFee) throws IOException {
+        return placeOrder(account, matcherKey, assetPair, orderType, price, amount, expiration, matcherFee, false);
+    }
+
+    public Order marketOrder(PrivateKeyAccount account, String matcherKey, AssetPair assetPair, Order.Type orderType,
+                             long price, long amount, long expiration, long matcherFee) throws IOException {
+        return placeOrder(account, matcherKey, assetPair, orderType, price, amount, expiration, matcherFee, true);
     }
 
     public String cancelOrder(PrivateKeyAccount account, AssetPair assetPair, String orderId) throws IOException {
@@ -621,8 +659,23 @@ public class Node {
         String endpoint;
         if (obj instanceof Transaction) {
             endpoint = "/transactions/broadcast";
-        } else if (obj instanceof Order) {
-            endpoint = "/matcher/orderbook";
+        } else {
+            throw new IllegalArgumentException();
+        }
+        HttpPost request = new HttpPost(uri.resolve(endpoint));
+        request.setEntity(new StringEntity(wavesJsonMapper.writeValueAsString(obj), ContentType.APPLICATION_JSON));
+        return request;
+    }
+
+    private HttpUriRequest matcherRequest(ApiJson obj) throws JsonProcessingException {
+        return matcherRequest(obj, false);
+    }
+
+    private HttpUriRequest matcherRequest(ApiJson obj, boolean isMarket) throws JsonProcessingException {
+        String endpoint = "/matcher/orderbook";
+        if (obj instanceof Order) {
+            if (isMarket)
+                endpoint += "/market";
         } else if (obj instanceof DeleteOrder) {
             DeleteOrder d = (DeleteOrder) obj;
             endpoint = "/matcher/orderbook/" + d.getAssetPair().getAmountAsset() + '/' + d.getAssetPair().getPriceAsset() + "/delete";
