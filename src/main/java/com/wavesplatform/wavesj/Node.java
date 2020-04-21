@@ -5,12 +5,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.wavesplatform.wavesj.json.WavesJsonMapper;
 import com.wavesplatform.wavesj.matcher.CancelOrder;
 import com.wavesplatform.wavesj.matcher.DeleteOrder;
 import com.wavesplatform.wavesj.matcher.Order;
-import com.wavesplatform.wavesj.transactions.InvokeScriptTransaction;
 import com.wavesplatform.wavesj.transactions.LeaseTransaction;
 import com.wavesplatform.wavesj.transactions.TransferTransactionV2;
 import org.apache.http.HttpResponse;
@@ -66,6 +64,8 @@ public class Node {
     private static final TypeReference<CalculatedFee> CALCULATED_FEE = new TypeReference<CalculatedFee>() {
     };
     private static final TypeReference<List<Block>> BLOCK_LIST = new TypeReference<List<Block>>() {
+    };
+    private static final TypeReference<List<AssetDetails>> ASSET_DETAILS_LIST = new TypeReference<List<AssetDetails>>() {
     };
 
     private final URI uri;
@@ -189,8 +189,13 @@ public class Node {
         return wavesJsonMapper.convertValue(send(String.format("/addresses/data/%s/%s", address, key)),ADDRESS_DATA_BY_KEY);
     }
 
-    public AssetDetails getAssetDetails(String assetId) throws IOException {
+    public AssetDetails getAssetDetailsList(String assetId) throws IOException {
         return wavesJsonMapper.convertValue(send("/assets/details/" + assetId), AssetDetails.class);
+    }
+
+    public List<AssetDetails> getAssetDetailsList(List<String> assetIds) throws IOException {
+        String arrayOfIds = String.join("&id=", assetIds);
+        return wavesJsonMapper.convertValue(send("/assets/details/?id=" + arrayOfIds), ASSET_DETAILS_LIST);
     }
 
     public List<Transaction> getActiveLeases(String address) throws IOException {

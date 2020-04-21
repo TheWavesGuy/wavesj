@@ -372,4 +372,17 @@ public class NodeTest {
         CalculatedFee calculatedFee = node.calculateFee(masstx);
         assertEquals(expectedCalculatedFee, calculatedFee);
     }
+
+    @Test
+    public void testAssetDetailsList() throws URISyntaxException, IOException {
+        Node node = new Node("https://nodes-stagenet.wavesnodes.com/", (byte)'S');
+        String asset0 = "8SFMKXiZnDic1TgVsWVCMUMu9h9R7ZGpQMWSDqWxFYzB";
+        String asset1 = "9r5MEVuBk9wXUfb4FvtPWfaGs7jKisWRrd8fkuXnJEZn";
+        List<String> assets = Arrays.asList(asset0, asset1);
+        List<AssetDetails> assetDetailsList = node.getAssetDetailsList(assets);
+        AssetDetails assetDetails0 = node.getAssetDetailsList(asset0);
+        AssetDetails assetDetails1 = node.getAssetDetailsList(asset1);
+        assertEquals(assetDetailsList.get(1), assetDetails0);
+        assertEquals(assetDetailsList.get(0), assetDetails1);
+    }
 }
