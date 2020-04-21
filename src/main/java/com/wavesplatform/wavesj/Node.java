@@ -189,7 +189,7 @@ public class Node {
         return wavesJsonMapper.convertValue(send(String.format("/addresses/data/%s/%s", address, key)),ADDRESS_DATA_BY_KEY);
     }
 
-    public AssetDetails getAssetDetailsList(String assetId) throws IOException {
+    public AssetDetails getAssetDetails(String assetId) throws IOException {
         return wavesJsonMapper.convertValue(send("/assets/details/" + assetId), AssetDetails.class);
     }
 
