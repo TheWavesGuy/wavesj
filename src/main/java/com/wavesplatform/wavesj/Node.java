@@ -67,6 +67,8 @@ public class Node {
     };
     private static final TypeReference<List<Block>> BLOCK_LIST = new TypeReference<List<Block>>() {
     };
+    private static final TypeReference<List<LeaseInfo>> LEASE_INFO_LIST = new TypeReference<List<LeaseInfo>>() {
+    };
 
     private final URI uri;
     private final WavesJsonMapper wavesJsonMapper;
@@ -193,8 +195,8 @@ public class Node {
         return wavesJsonMapper.convertValue(send("/assets/details/" + assetId), AssetDetails.class);
     }
 
-    public List<Transaction> getActiveLeases(String address) throws IOException {
-        return wavesJsonMapper.convertValue(send("/leasing/active/" + address), new TypeReference<List<Transaction>>(){});
+    public List<LeaseInfo> getActiveLeases(String address) throws IOException {
+        return wavesJsonMapper.convertValue(send("/leasing/active/" + address), LEASE_INFO_LIST);
     }
 
 
