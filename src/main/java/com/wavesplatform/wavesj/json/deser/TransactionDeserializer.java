@@ -45,6 +45,9 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                     case Transaction.V2:
                         t = AliasTransactionV2.class;
                         break;
+                    case Transaction.V3:
+                        t = AliasTransactionV3.class;
+                        break;
                 }
                 break;
             case BurnTransaction.BURN:
@@ -54,6 +57,9 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                         break;
                     case Transaction.V2:
                         t = BurnTransactionV2.class;
+                        break;
+                    case Transaction.V3:
+                        t = BurnTransactionV3.class;
                         break;
                 }
                 break;
@@ -68,6 +74,9 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                     case Transaction.V2:
                         t = IssueTransactionV2.class;
                         break;
+                    case Transaction.V3:
+                        t = IssueTransactionV3.class;
+                        break;
                 }
                 break;
             case LeaseCancelTransaction.LEASE_CANCEL:
@@ -78,6 +87,9 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                     case Transaction.V2:
                         t = LeaseCancelTransactionV2.class;
                         break;
+                    case Transaction.V3:
+                        t = LeaseCancelTransactionV3.class;
+                        break;
                 }
                 break;
             case LeaseTransaction.LEASE:
@@ -87,6 +99,9 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                         break;
                     case Transaction.V2:
                         t = LeaseTransactionV2.class;
+                        break;
+                    case Transaction.V3:
+                        t = LeaseTransactionV3.class;
                         break;
                 }
                 break;
@@ -100,6 +115,9 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                         break;
                     case Transaction.V2:
                         t = ReissueTransactionV2.class;
+                        break;
+                    case Transaction.V3:
+                        t = ReissueTransactionV3.class;
                         break;
                 }
                 break;
@@ -126,6 +144,9 @@ public class TransactionDeserializer extends StdDeserializer<Transaction> {
                         break;
                     case Transaction.V2:
                         t = TransferTransactionV2.class;
+                        break;
+                    case Transaction.V3:
+                        t = TransferTransactionV3.class;
                         break;
                 }
                 break;

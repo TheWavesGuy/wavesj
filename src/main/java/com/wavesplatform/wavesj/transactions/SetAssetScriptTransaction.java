@@ -8,7 +8,8 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 
-import static com.wavesplatform.wavesj.ByteUtils.*;
+import static com.wavesplatform.wavesj.ByteUtils.KBYTE;
+import static com.wavesplatform.wavesj.ByteUtils.putScript;
 
 public class SetAssetScriptTransaction extends TransactionWithProofs<SetAssetScriptTransaction>{
     public static final byte SET_ASSET_SCRIPT = 15;
