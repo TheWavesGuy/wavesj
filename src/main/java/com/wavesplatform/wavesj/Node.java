@@ -5,12 +5,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.type.ReferenceType;
 import com.wavesplatform.wavesj.json.WavesJsonMapper;
 import com.wavesplatform.wavesj.matcher.CancelOrder;
 import com.wavesplatform.wavesj.matcher.DeleteOrder;
 import com.wavesplatform.wavesj.matcher.Order;
-import com.wavesplatform.wavesj.transactions.InvokeScriptTransaction;
 import com.wavesplatform.wavesj.transactions.LeaseTransaction;
 import com.wavesplatform.wavesj.transactions.TransferTransactionV2;
 import org.apache.http.HttpResponse;
@@ -68,6 +66,8 @@ public class Node {
     private static final TypeReference<List<Block>> BLOCK_LIST = new TypeReference<List<Block>>() {
     };
     private static final TypeReference<List<LeaseInfo>> LEASE_INFO_LIST = new TypeReference<List<LeaseInfo>>() {
+    };
+    private static final TypeReference<List<AssetDetails>> ASSET_DETAILS_LIST = new TypeReference<List<AssetDetails>>() {
     };
 
     private final URI uri;
@@ -177,6 +177,10 @@ public class Node {
         String path = String.format("/assets/%s/distribution/%d/limit/%d?after=%s", assetId, height, limit, after);
         HttpResponse r = exec(request(path));
         return parse(r, ASSET_DISTRIBUTION_BY_HEIGHT);
+    }
+
+    public List<AssetDetails> getNFTs(String address, int limit) throws IOException {
+        return wavesJsonMapper.convertValue(send("/assets/nft/" + address + "/limit/" + limit), ASSET_DETAILS_LIST);
     }
 
     public List<AssetBalance> getAssetsBalance(String address) throws IOException {
